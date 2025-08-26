@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 // Files import
 
 import weatherRouter from "./route/weather.route.js";
+import stayRouter from "./route/stay.route.js";
 
 const app = express();
 
@@ -22,5 +23,5 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/weather", weatherRouter);
-
+app.use("/api/stay", stayRouter);
 export { app };
