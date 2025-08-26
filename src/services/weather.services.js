@@ -27,7 +27,7 @@ const getCoordinates = async (city) => {
 };
 
 // Main function: Get current weather by city name
-export const getWeather = async (city, isDetailed = true) => {
+export const getWeather = async (city, isDetailed) => {
   try {
     // Get city coordinates
     const { lat, lon } = await getCoordinates(city);
@@ -35,18 +35,19 @@ export const getWeather = async (city, isDetailed = true) => {
     // Base URL
     let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto`;
 
-    // 3️⃣ Always get current weather
+    // Always get current weather
     url += "&current_weather=true";
 
-    //  If detailed weather is requested, add hourly, daily & alerts
+    // If detailed weather is requested, add hourly, daily & alerts
     if (isDetailed) {
+      // Changed from !isDetailed to isDetailed
       url +=
         "&hourly=temperature_2m,relative_humidity_2m,precipitation,weathercode,windspeed_10m" +
         "&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum" +
         "&alerts=1";
     }
 
-    // 5️⃣ Fetch weather data
+    // Fetch weather data
     const response = await axios.get(url);
 
     if (!response.data) {
@@ -55,11 +56,12 @@ export const getWeather = async (city, isDetailed = true) => {
 
     const { data } = response;
 
-    // 6️⃣ Basic current weather
+    // Basic current weather
     const current = data.current_weather;
 
-    // 7️⃣ If not detailed, return only current data
+    // If not detailed, return only current data
     if (!isDetailed) {
+      // This condition is correct
       return {
         city,
         coordinates: { lat, lon },
@@ -73,7 +75,7 @@ export const getWeather = async (city, isDetailed = true) => {
       };
     }
 
-    // 8️⃣ If detailed, return everything
+    // If detailed, return everything
     const rawData = {
       city,
       coordinates: { lat, lon },
@@ -88,9 +90,8 @@ export const getWeather = async (city, isDetailed = true) => {
       daily: data.daily || {},
       alerts: data.alerts || [],
     };
-    const mppedData = mapWeatherData(rawData);
-    console.log(mppedData);
-    return mppedData;
+    console.log(mapWeatherData(rawData));
+    return mapWeatherData(rawData);
   } catch (error) {
     console.error("Weather API Error:", error.message);
     return { error: "Failed to fetch weather data" };

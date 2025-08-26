@@ -1,17 +1,40 @@
 export const mapWeatherData = (weatherData) => {
-  // Get current time
+  // Get current time and format it to match hourly data format (round to nearest hour)
   const currentTime = new Date(weatherData.current.time);
+  // Round to the nearest hour to match hourly data format
+  currentTime.setMinutes(0, 0, 0);
+  const formattedCurrentTime = currentTime
+    .toISOString()
+    .replace(/\.\d{3}Z$/, "");
 
   // Find the hourly data for current time
   const hourlyTimes = weatherData.hourly.time;
-  const currentIndex = hourlyTimes.findIndex(
-    (time) => time === weatherData.current.time
-  );
+
+  // Try to find exact match first, then try formatted match
+  let currentIndex = hourlyTimes.indexOf(weatherData.current.time);
 
   if (currentIndex === -1) {
-    throw new Error("Current time not found in hourly data");
+    // If exact match not found, try with formatted time
+    currentIndex = hourlyTimes.indexOf(formattedCurrentTime);
   }
 
+  if (currentIndex === -1) {
+    // If still not found, find the closest time
+    const currentTimestamp = new Date(weatherData.current.time).getTime();
+    currentIndex = hourlyTimes.findIndex((time) => {
+      const timeDiff = Math.abs(new Date(time).getTime() - currentTimestamp);
+      return timeDiff < 60 * 60 * 1000; // Within 1 hour
+    });
+  }
+
+  if (currentIndex === -1) {
+    console.warn(
+      "Current time not found in hourly data, using first available data"
+    );
+    currentIndex = 0; // Fallback to first available data
+  }
+
+  // Rest of your mapping code remains the same...
   // Get data for current time and next 3 hours and map to objects
   const hourlyData = [];
   for (let i = 0; i < 4 && currentIndex + i < hourlyTimes.length; i++) {
@@ -29,7 +52,7 @@ export const mapWeatherData = (weatherData) => {
   // Get sunrise/sunset for next 3 days
   const dailyTimes = weatherData.daily.time;
   const currentDate = weatherData.current.time.split("T")[0];
-  const currentDateIndex = dailyTimes.findIndex((date) => date === currentDate);
+  const currentDateIndex = dailyTimes.indexOf(currentDate);
 
   if (currentDateIndex === -1) {
     throw new Error("Current date not found in daily data");
