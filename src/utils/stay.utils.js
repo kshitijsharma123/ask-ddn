@@ -116,7 +116,6 @@ export async function saveScrapedStays(rawData = [], options = {}) {
           }
         }
       }
-
       // fallback to defaultLocation param or simple city map
       if (!location) {
         const cityKey = (item.city || "").toString().toLowerCase();
