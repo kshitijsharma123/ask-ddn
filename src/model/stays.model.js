@@ -60,7 +60,7 @@ const staySchema = new mongoose.Schema(
   }
 );
 
-staySchema.index({ lastUpdated: 1 }, { expireAfterSeconds: 21600 });
+// staySchema.index({ lastUpdated: 1 }, { expireAfterSeconds: 21600 });
 
 const Stay = mongoose.model("Stay", staySchema);
 export default Stay;

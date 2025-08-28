@@ -1,5 +1,6 @@
 // testAirbnb.js
 import { scrapeAirbnb } from "./../src/scrapper/airbnb.scrapper.js";
+import fs from "fs";
 
 const testScraper = async () => {
   console.log("🔍 Scraping Airbnb stays...");
@@ -20,6 +21,9 @@ const testScraper = async () => {
   });
 
   console.log("✅ Scraping finished!");
+  const filename = `airbnbData.json`;
+  fs.writeFileSync(filename, JSON.stringify(stays, null, 2));
+  console.log("result is stored in the file ", stays.length, filename);
 };
 
 testScraper();

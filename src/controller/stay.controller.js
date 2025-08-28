@@ -1,7 +1,8 @@
-import Stay from "../model/stays.model.js";
+import Stays from "../model/stays.model.js";
+import { processStaysData } from "../services/dataProcess.services.js";
 import { stayService, fetchHotelFromApi } from "../services/stays.services.js";
 import { saveScrapedStays } from "../utils/stay.utils.js";
-
+import { scrapeAllHotelsDehradun } from "./../scrapper/googleMaps.scrapper.js";
 export const getStaysAirbnb = async (req, res) => {
   try {
     const { city } = req.query;
@@ -14,7 +15,7 @@ export const getStaysAirbnb = async (req, res) => {
     const cityRegex = new RegExp(city, "i");
 
     // 1) Fetch existing stays from DB for the given city
-    const existingStays = await Stay.find({ address: cityRegex })
+    const existingStays = await Stays.find({ address: cityRegex })
       .sort({ lastUpdated: -1 })
       .lean();
 
@@ -63,7 +64,7 @@ export const getStaysAirbnb = async (req, res) => {
     }
 
     // 5) Delete old records for the city
-    await Stay.deleteMany({ address: cityRegex });
+    await Stays.deleteMany({ address: cityRegex });
 
     // 6) Default locations for known cities
     const defaultLocations = {
@@ -79,7 +80,7 @@ export const getStaysAirbnb = async (req, res) => {
     });
 
     // 8) Fetch new records from DB
-    const finalDocs = await Stay.find({ address: cityRegex }).lean();
+    const finalDocs = await Stays.find({ address: cityRegex }).lean();
 
     return res.json({
       source: "scrapperI",
@@ -96,6 +97,9 @@ export const getStaysAirbnb = async (req, res) => {
 };
 
 export const getHotels = async (req, res) => {
-  const data = await fetchHotelFromApi("dehradun");
-  return res.json({ data });
+  const googleMapsData = await scrapeAllHotelsDehradun();
+
+  const hotels = await processStaysData(googleMapsData);
+
+  return res.json({ message: "working", hotels });
 };

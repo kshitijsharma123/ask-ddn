@@ -1,20 +1,9 @@
 import puppeteer from "puppeteer";
 
-/**
- * Fixed Dehradun Hotels Scraper with Better Price Detection
- *
- * Fixes applied:
- * 1. Removed async/await from page.evaluate()
- * 2. Simplified price extraction logic
- * 3. Fixed DOM element handling
- * 4. Improved selectors for price detection
- * 5. Kept original function structure
- */
-
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const CONFIG = {
-  headless: false,
+  headless: true,
   viewport: { width: 1366, height: 768 },
   maxResultsTotal: 1500,
   protocolTimeout: 60000,
@@ -489,7 +478,7 @@ const performFastScroll = async (page, strategy) => {
   return allResults;
 };
 
-// Main scraping function - KEPT ORIGINAL NAME
+// Main Function
 export const scrapeAllHotelsDehradun = async () => {
   console.log("🚀 Fixed Dehradun Hotels Scraper Starting...");
   console.log(`🔍 Using ${CONFIG.searchStrategies.length} search strategies`);

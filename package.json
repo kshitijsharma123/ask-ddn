@@ -19,6 +19,8 @@
     "morgan": "^1.10.1",
     "node-cron": "^4.2.1",
     "nodemon": "^3.1.10",
-    "puppeteer": "^24.17.0"
+    "puppeteer": "^24.17.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }
