@@ -1,13 +1,7 @@
 import Stay from "../model/stays.model.js";
 
-export const processStaysData = async (data = [], scorce = "googlemaps") => {
-  if (!Array.isArray(data) || data.length === 0) {
-    console.log("No data from the " + scorce + " scrapper");
-    return;
-  }
-
-  console.log(`🛠️ Processing ${data.length} stays from ${scorce}...`);
-
+// Normalize googleMaps data
+const NormalizeGoogleMapsData = (data) => {
   const bulkOps = data.map((item) => {
     const name = (item.name || "Unnamed Stay").trim();
     const address = item.address || "Address not available";
@@ -74,17 +68,95 @@ export const processStaysData = async (data = [], scorce = "googlemaps") => {
       },
     };
   });
+  return bulkOps;
+};
+
+// Normalize airbnb data
+const NormalizeAirbnbData = (data) => {
+  return data.map((item) => {
+    // Parse price - handle null/undefined and extract numeric value if possible
+    let normalizedPrice = "N/A";
+    if (item.price && item.price !== null) {
+      // Extract numbers from price string
+      const priceMatch = item.price.toString().match(/\d+/);
+      normalizedPrice = priceMatch ? priceMatch[0] : "N/A";
+    }
+
+    // Handle rating - convert null to undefined (which will use schema default)
+    const normalizedRating = item.rating === null ? undefined : item.rating;
+
+    // Use sourceUrl as the unique identifier since it's the same as scoreid
+    const sourceIdentifier =
+      item.sourceUrl || item.id || `airbnb_${Date.now()}`;
+
+    // Create normalized object with MongoDB update operation structure
+    return {
+      updateOne: {
+        filter: { sourceUrl: sourceIdentifier }, // Use sourceUrl as unique identifier
+        update: {
+          $set: {
+            name: item.name || "Unnamed Property",
+            description: "", // Not in source data
+            type: item.type || "airbnb",
+            address: "", // Not in source data
+            location: {
+              lat: 0, // Placeholder - need geocoding implementation
+              lon: 0, // Placeholder - need geocoding implementation
+            },
+            rating: normalizedRating,
+            price: normalizedPrice,
+            amenities: [], // Not in source data
+            images: Array.isArray(item.images) ? item.images : [],
+            sourceUrl: sourceIdentifier,
+            lastUpdated: new Date(),
+          },
+        },
+        upsert: true,
+      },
+    };
+  });
+};
+
+// Function stores the data in mongodb
+export const processStaysData = async (data = [], source = "googlemaps") => {
+  if (!Array.isArray(data) || data.length === 0) {
+    console.log("No data from the " + source + " scrapper");
+    return;
+  }
+
+  let NormalizeData;
+
+  console.log(`🛠️ Processing ${data.length} stays from ${source}...`);
+
+  if (source === "googlemaps") {
+    NormalizeData = NormalizeGoogleMapsData(data);
+  } else if (source === "airbnb") {
+    NormalizeData = NormalizeAirbnbData(data);
+    console.log(NormalizeData);
+  } else {
+    console.error(`❌ Unknown source: ${source}`);
+    return;
+  }
+
+  if (
+    !NormalizeData ||
+    !Array.isArray(NormalizeData) ||
+    NormalizeData.length === 0
+  ) {
+    console.error(`❌ No normalized data to process for ${source}`);
+    return;
+  }
 
   try {
-    const result = await Stay.bulkWrite(bulkOps, { ordered: false });
+    const result = await Stay.bulkWrite(NormalizeData, { ordered: false });
     console.log(
-      `✅ ${scorce}: upserted=${result.upsertedCount || 0}, modified=${
+      `✅ ${source}: upserted=${result.upsertedCount || 0}, modified=${
         result.modifiedCount || 0
       }`
     );
     return result;
   } catch (error) {
-    console.error(`❌ Error processing stays from ${scorce}:`, error);
+    console.error(`❌ Error processing stays from ${source}:`, error);
     throw error;
   }
 };

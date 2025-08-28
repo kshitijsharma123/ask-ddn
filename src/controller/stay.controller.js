@@ -83,7 +83,7 @@ export const getStaysAirbnb = async (req, res) => {
     const finalDocs = await Stays.find({ address: cityRegex }).lean();
 
     return res.json({
-      source: "scrapperI",
+      source: "scrapper",
       data: finalDocs,
       replaced: true,
       saveSummary,

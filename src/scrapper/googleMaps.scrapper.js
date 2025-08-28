@@ -11,35 +11,35 @@ const CONFIG = {
   searchStrategies: [
     // Category-based searches
     { query: "hotels in dehradun", type: "category" },
-    { query: "resorts dehradun", type: "category" },
-    { query: "guest house dehradun", type: "category" },
-    { query: "lodges dehradun", type: "category" },
-    { query: "homestay dehradun", type: "category" },
-    { query: "accommodation dehradun", type: "category" },
-    { query: "boutique hotels dehradun", type: "category" },
-    { query: "budget hotels dehradun", type: "category" },
-    { query: "luxury hotels dehradun", type: "category" },
-    { query: "business hotels dehradun", type: "category" },
+    // { query: "resorts dehradun", type: "category" },
+    // { query: "guest house dehradun", type: "category" },
+    // { query: "lodges dehradun", type: "category" },
+    // { query: "homestay dehradun", type: "category" },
+    // { query: "accommodation dehradun", type: "category" },
+    // { query: "boutique hotels dehradun", type: "category" },
+    // { query: "budget hotels dehradun", type: "category" },
+    // { query: "luxury hotels dehradun", type: "category" },
+    // { query: "business hotels dehradun", type: "category" },
 
-    // Major area-based searches
-    { query: "hotels mussoorie road dehradun", type: "area" },
-    { query: "hotels rajpur road dehradun", type: "area" },
-    { query: "hotels clement town dehradun", type: "area" },
-    { query: "hotels sahastradhara dehradun", type: "area" },
-    { query: "hotels malsi deer park dehradun", type: "area" },
-    { query: "hotels tapkeshwar dehradun", type: "area" },
-    { query: "hotels gandhi park dehradun", type: "area" },
-    { query: "hotels clock tower dehradun", type: "area" },
+    // // Major area-based searches
+    // { query: "hotels mussoorie road dehradun", type: "area" },
+    // { query: "hotels rajpur road dehradun", type: "area" },
+    // { query: "hotels clement town dehradun", type: "area" },
+    // { query: "hotels sahastradhara dehradun", type: "area" },
+    // { query: "hotels malsi deer park dehradun", type: "area" },
+    // { query: "hotels tapkeshwar dehradun", type: "area" },
+    // { query: "hotels gandhi park dehradun", type: "area" },
+    // { query: "hotels clock tower dehradun", type: "area" },
 
-    // Transport hub searches
-    { query: "hotels near dehradun railway station", type: "transport" },
-    { query: "hotels near jolly grant airport", type: "transport" },
-    { query: "hotels isbt dehradun", type: "transport" },
+    // // Transport hub searches
+    // { query: "hotels near dehradun railway station", type: "transport" },
+    // { query: "hotels near jolly grant airport", type: "transport" },
+    // { query: "hotels isbt dehradun", type: "transport" },
 
-    // Landmark-based searches
-    { query: "hotels near forest research institute", type: "landmark" },
-    { query: "hotels near mindrolling monastery", type: "landmark" },
-    { query: "hotels near robbers cave", type: "landmark" },
+    // // Landmark-based searches
+    // { query: "hotels near forest research institute", type: "landmark" },
+    // { query: "hotels near mindrolling monastery", type: "landmark" },
+    // { query: "hotels near robbers cave", type: "landmark" },
   ],
 
   // Enhanced selectors to catch more hotels
