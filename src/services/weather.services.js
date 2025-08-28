@@ -3,7 +3,7 @@ import axios from "axios";
 import { mapWeatherData } from "./../utils/weather.utils.js";
 
 // Helper function to get latitude & longitude from city name
-const getCoordinates = async (city) => {
+export const getCoordinates = async (city) => {
   try {
     const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
       city

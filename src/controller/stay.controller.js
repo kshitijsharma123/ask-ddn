@@ -1,5 +1,5 @@
 import Stay from "../model/stays.model.js";
-import { stayService } from "../services/stays.services.js";
+import { stayService, fetchHotelFromApi } from "../services/stays.services.js";
 import { saveScrapedStays } from "../utils/stay.utils.js";
 
 export const getStaysAirbnb = async (req, res) => {
@@ -93,4 +93,9 @@ export const getStaysAirbnb = async (req, res) => {
       .status(500)
       .json({ message: "internal error", error: err.message });
   }
+};
+
+export const getHotels = async (req, res) => {
+  const data = await fetchHotelFromApi("dehradun");
+  return res.json({ data });
 };
