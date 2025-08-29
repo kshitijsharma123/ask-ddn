@@ -81,8 +81,8 @@ const NormalizeAirbnbData = (data, options = {}) => {
     const address = `${name}, ${city}`;
 
     // Handle location coordinates
-    let lat = 0;
-    let lon = 0;
+    let lat = 30.3776416;
+    let lon = 78.077028;
 
     // Use default location if provided
     if (defaultLocation && defaultLocation.lat && defaultLocation.lon) {
