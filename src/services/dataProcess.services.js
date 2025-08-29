@@ -72,51 +72,98 @@ const NormalizeGoogleMapsData = (data) => {
 };
 
 // Normalize airbnb data
-const NormalizeAirbnbData = (data) => {
-  return data.map((item) => {
-    // Parse price - handle null/undefined and extract numeric value if possible
-    let normalizedPrice = "N/A";
-    if (item.price && item.price !== null) {
-      // Extract numbers from price string
-      const priceMatch = item.price.toString().match(/\d+/);
-      normalizedPrice = priceMatch ? priceMatch[0] : "N/A";
+const NormalizeAirbnbData = (data, options = {}) => {
+  const { defaultLocation, logger = console } = options;
+
+  const bulkOps = data.map((item) => {
+    const name = (item.name || "Unnamed Property").trim();
+    const city = item.city || "Unknown";
+    const address = `${name}, ${city}`;
+
+    // Handle location coordinates
+    let lat = 0;
+    let lon = 0;
+
+    // Use default location if provided
+    if (defaultLocation && defaultLocation.lat && defaultLocation.lon) {
+      lat = Number(defaultLocation.lat);
+      lon = Number(defaultLocation.lon);
+
+      if (logger) {
+        logger.log(`Using default location for ${city}:`, { lat, lon });
+      }
     }
 
-    // Handle rating - convert null to undefined (which will use schema default)
-    const normalizedRating = item.rating === null ? undefined : item.rating;
+    // Parse rating safely
+    let rating = null;
+    if (
+      item.rating !== undefined &&
+      item.rating !== null &&
+      item.rating !== ""
+    ) {
+      const parsed = parseFloat(String(item.rating).replace(",", "."));
+      rating = Number.isFinite(parsed) ? parsed : null;
+    }
 
-    // Use sourceUrl as the unique identifier since it's the same as scoreid
-    const sourceIdentifier =
-      item.sourceUrl || item.id || `airbnb_${Date.now()}`;
+    // Parse price safely
+    let price = "N/A";
+    if (item.price && item.price !== null) {
+      const priceMatch = item.price.toString().match(/\d+/);
+      price = priceMatch ? `₹${priceMatch[0]}` : "N/A";
+    }
 
-    // Create normalized object with MongoDB update operation structure
+    const sourceUrl = item.sourceUrl || item.id || `airbnb_${Date.now()}`;
+    const images = Array.isArray(item.images)
+      ? item.images.filter(Boolean)
+      : [];
+    const amenities = Array.isArray(item.amenities)
+      ? item.amenities.filter(Boolean)
+      : [];
+
+    const setOps = {
+      name,
+      description: item.description || "",
+      type: "airbnb",
+      address,
+      location: { lat, lon },
+      price,
+      sourceUrl,
+      lastUpdated: new Date(),
+    };
+
+    if (rating !== null) {
+      setOps.rating = rating;
+    }
+
+    const updateDoc = {
+      $setOnInsert: { createdAt: new Date() },
+      $set: setOps,
+    };
+
+    if (images.length > 0) {
+      updateDoc.$addToSet = { images: { $each: images } };
+    }
+    if (amenities.length > 0) {
+      updateDoc.$addToSet = updateDoc.$addToSet || {};
+      updateDoc.$addToSet.amenities = { $each: amenities };
+    }
+
+    // Use sourceUrl as primary filter since it's unique for Airbnb
+    const filter = sourceUrl
+      ? { sourceUrl }
+      : { name, "location.lat": lat, "location.lon": lon };
+
     return {
       updateOne: {
-        filter: { sourceUrl: sourceIdentifier }, // Use sourceUrl as unique identifier
-        update: {
-          $set: {
-            name: item.name || "Unnamed Property",
-            description: "", // Not in source data
-            type: item.type || "airbnb",
-            address: "", // Not in source data
-            location: {
-              lat: 0, // Placeholder - need geocoding implementation
-              lon: 0, // Placeholder - need geocoding implementation
-            },
-            rating: normalizedRating,
-            price: normalizedPrice,
-            amenities: [], // Not in source data
-            images: Array.isArray(item.images) ? item.images : [],
-            sourceUrl: sourceIdentifier,
-            lastUpdated: new Date(),
-          },
-        },
+        filter,
+        update: updateDoc,
         upsert: true,
       },
     };
   });
-};
 
+  return bulkOps;
+};
 // Function stores the data in mongodb
 export const processStaysData = async (data = [], source = "googlemaps") => {
   if (!Array.isArray(data) || data.length === 0) {

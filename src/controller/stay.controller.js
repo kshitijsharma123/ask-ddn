@@ -13,11 +13,10 @@ export const getStaysAirbnb = async (req, res) => {
 
     // Regex for flexible city search
     const cityRegex = new RegExp(city, "i");
+    console.log(cityRegex);
 
     // 1) Fetch existing stays from DB for the given city
-    const existingStays = await Stays.find({ address: cityRegex })
-      .sort({ lastUpdated: -1 })
-      .lean();
+    const existingStays = await Stays.find({ address: cityRegex }).lean();
 
     // 2) Check last update time (6 hours = 21600000 ms)
     const SIX_HOURS = 6 * 60 * 60 * 1000;
@@ -48,15 +47,15 @@ export const getStaysAirbnb = async (req, res) => {
     console.log(`🔄 Fetching fresh data for city: ${city}...`);
     const rawServiceResult = await stayService(city);
 
-    const scraped = Array.isArray(rawServiceResult)
-      ? rawServiceResult
-      : Array.isArray(rawServiceResult?.rawData)
-      ? rawServiceResult.rawData
-      : Array.isArray(rawServiceResult?.data)
-      ? rawServiceResult.data
-      : [];
+    // const scraped = Array.isArray(rawServiceResult)
+    //   ? rawServiceResult
+    //   : Array.isArray(rawServiceResult?.rawData)
+    //   ? rawServiceResult.rawData
+    //   : Array.isArray(rawServiceResult?.data)
+    //   ? rawServiceResult.data
+    //   : [];
 
-    if (!scraped.length) {
+    if (!rawServiceResult.length) {
       return res.status(404).json({
         message: "No data found from scraper",
         data: existingStays,
@@ -64,29 +63,33 @@ export const getStaysAirbnb = async (req, res) => {
     }
 
     // 5) Delete old records for the city
-    await Stays.deleteMany({ address: cityRegex });
+    // await Stays.deleteMany({
+    //   $and: [{ address: cityRegex }, { type: "airbnb" }],
+    // });
 
     // 6) Default locations for known cities
-    const defaultLocations = {
-      dehradun: { lat: 30.3165, lon: 78.0322 },
-      mussoorie: { lat: 30.4595, lon: 78.096 },
-    };
-    const defaultLocation = defaultLocations[city.toLowerCase()] ?? null;
+    // const defaultLocations = {
+    //   dehradun: { lat: 30.3165, lon: 78.0322 },
+    //   mussoorie: { lat: 30.4595, lon: 78.096 },
+    // };
+    // const defaultLocation = defaultLocations[city.toLowerCase()] ?? null;
 
-    // 7) Save fresh data into DB
-    const saveSummary = await saveScrapedStays(scraped, {
-      defaultLocation,
-      logger: console,
-    });
+    // // 7) Save fresh data into DB
+    // const saveSummary = await saveScrapedStays(scraped, {
+    //   defaultLocation,
+    //   logger: console,
+    // });
 
-    // 8) Fetch new records from DB
-    const finalDocs = await Stays.find({ address: cityRegex }).lean();
+    // // 8) Fetch new records from DB
+    // const finalDocs = await Stays.find({
+    //   address: cityRegex,
+    //   type: "airbnb",
+    // }).lean();
 
     return res.json({
       source: "scrapper",
-      data: finalDocs,
+      data: rawServiceResult,
       replaced: true,
-      saveSummary,
     });
   } catch (err) {
     console.error("getStays error:", err);
